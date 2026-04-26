@@ -1,0 +1,19 @@
+{
+  "holdings": [
+    {"ticker": "INFY", "name": "Infosys", "sector": "Technology", "quantity": 200, "avg_cost": 1400, "current_price": 1580},
+    {"ticker": "RELIANCE", "name": "Reliance Industries", "sector": "Energy", "quantity": 150, "avg_cost": 2500, "current_price": 2730},
+    {"ticker": "HDFCBANK", "name": "HDFC Bank", "sector": "Financials", "quantity": 100, "avg_cost": 1600, "current_price": 1540},
+    {"ticker": "TCS", "name": "TCS", "sector": "Technology", "quantity": 80, "avg_cost": 3500, "current_price": 3820},
+    {"ticker": "SUNPHARMA", "name": "Sun Pharma", "sector": "Healthcare", "quantity": 120, "avg_cost": 950, "current_price": 1020},
+    {"ticker": "WIPRO", "name": "Wipro", "sector": "Technology", "quantity": 300, "avg_cost": 400, "current_price": 450},
+    {"ticker": "ICICIBANK", "name": "ICICI Bank", "sector": "Financials", "quantity": 200, "avg_cost": 900, "current_price": 1050},
+    {"ticker": "LT", "name": "Larsen & Toubro", "sector": "Industrials", "quantity": 60, "avg_cost": 2800, "current_price": 3100},
+    {"ticker": "HINDUNILVR", "name": "Hindustan Unilever", "sector": "Consumer Staples", "quantity": 80, "avg_cost": 2400, "current_price": 2300},
+    {"ticker": "BAJFINANCE", "name": "Bajaj Finance", "sector": "Financials", "quantity": 40, "avg_cost": 6500, "current_price": 7200},
+    {"ticker": "ASIANPAINT", "name": "Asian Paints", "sector": "Materials", "quantity": 70, "avg_cost": 3000, "current_price": 2850},
+    {"ticker": "MARUTI", "name": "Maruti Suzuki", "sector": "Consumer Discretionary", "quantity": 30, "avg_cost": 9000, "current_price": 10500},
+    {"ticker": "NTPC", "name": "NTPC", "sector": "Utilities", "quantity": 500, "avg_cost": 180, "current_price": 210},
+    {"ticker": "DRREDDY", "name": "Dr. Reddy's Labs", "sector": "Healthcare", "quantity": 50, "avg_cost": 4800, "current_price": 5200},
+    {"ticker": "TITAN", "name": "Titan Company", "sector": "Consumer Discretionary", "quantity": 90, "avg_cost": 2800, "current_price": 3300}
+  ]
+}

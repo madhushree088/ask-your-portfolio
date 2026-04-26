@@ -1,0 +1,41 @@
+cases:
+  - id: eval_01
+    query: "What is my P&L?"
+    intent: pnl
+    checks:
+      - key: total_pnl
+        type: exists
+      - key: sources
+        contains: portfolio.json
+
+  - id: eval_02
+    query: "Show me sector allocation"
+    intent: allocation
+    checks:
+      - key: allocation
+        type: list_nonempty
+      - key: sources
+        contains: portfolio.json
+
+  - id: eval_03
+    query: "What is my profit on TCS?"
+    intent: pnl
+    checks:
+      - key: holdings
+        type: list_nonempty
+
+  - id: eval_04
+    query: "How much is invested in Technology?"
+    intent: allocation
+    checks:
+      - key: allocation
+        type: list_nonempty
+
+  - id: eval_05
+    query: "What is EBITDA?"
+    intent: general
+    checks:
+      - key: answer
+        type: exists
+      - key: sources
+        type: list_nonempty

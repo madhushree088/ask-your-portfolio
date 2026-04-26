@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ask Your Portfolio</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f7f6f3;
+      --bg-tertiary: #f0ede8;
+      --text-primary: #1a1a18;
+      --text-secondary: #6b6a66;
+      --text-tertiary: #9c9b97;
+      --border: rgba(0,0,0,0.1);
+      --border-mid: rgba(0,0,0,0.18);
+      --radius: 10px;
+      --radius-lg: 14px;
+      --pos: #1a7a52;
+      --neg: #c0392b;
+      --accent: #1a1a18;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1c1c1a;
+        --bg-secondary: #242422;
+        --bg-tertiary: #2c2c2a;
+        --text-primary: #f0ede8;
+        --text-secondary: #a8a7a2;
+        --text-tertiary: #6b6a66;
+        --border: rgba(255,255,255,0.1);
+        --border-mid: rgba(255,255,255,0.18);
+        --pos: #2ecc71;
+        --neg: #e74c3c;
+        --accent: #f0ede8;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-tertiary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1080px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      border: 0.5px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.08);
+    }
+
+    /* ── top bar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 22px;
+      background: var(--bg-primary);
+      border-bottom: 0.5px solid var(--border);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #3d9970; flex-shrink: 0; }
+    .topbar-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .topbar-sub { font-size: 12px; color: var(--text-tertiary); }
+    .topbar-badge {
+      font-size: 11px; padding: 4px 10px;
+      border: 0.5px solid var(--border-mid);
+      border-radius: 20px; color: var(--text-secondary);
+    }
+
+    /* ── body split ── */
+    .body { display: grid; grid-template-columns: 1fr 340px; min-height: 600px; }
+
+    /* ── left panel ── */
+    .left { background: var(--bg-primary); border-right: 0.5px solid var(--border); display: flex; flex-direction: column; }
+
+    /* ── metrics ── */
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 0.5px solid var(--border); }
+    .metric { padding: 16px 20px; border-right: 0.5px solid var(--border); }
+    .metric:last-child { border-right: none; }
+    .metric-label { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 5px; text-transform: uppercase; }
+    .metric-value { font-size: 22px; font-weight: 500; color: var(--text-primary); line-height: 1; }
+    .metric-value.pos { color: var(--pos); }
+    .metric-value.neg { color: var(--neg); }
+    .metric-sub { font-size: 11px; margin-top: 4px; color: var(--text-tertiary); }
+    .metric-sub.pos { color: var(--pos); }
+    .metric-sub.neg { color: var(--neg); }
+
+    /* ── tabs ── */
+    .tabs { display: flex; padding: 0 20px; border-bottom: 0.5px solid var(--border); gap: 2px; }
+    .tab {
+      font-size: 12px; padding: 10px 12px; cursor: pointer;
+      color: var(--text-secondary); border-bottom: 2px solid transparent;
+      margin-bottom: -0.5px; background: none; border-top: none;
+      border-left: none; border-right: none; transition: color 0.15s;
+    }
+    .tab:hover { color: var(--text-primary); }
+    .tab.active { color: var(--text-primary); font-weight: 600; border-bottom-color: var(--accent); }
+
+    /* ── holdings table ── */
+    .panel { flex: 1; overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    thead th {
+      text-align: left; padding: 9px 20px;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.05em;
+      color: var(--text-tertiary); text-transform: uppercase;
+      border-bottom: 0.5px solid var(--border);
+      background: var(--bg-primary); position: sticky; top: 0; z-index: 1;
+    }
+    thead th:not(:first-child) { text-align: right; }
+    tbody td { padding: 9px 20px; border-bottom: 0.5px solid var(--border); color: var(--text-primary); vertical-align: middle; }
+    tbody td:not(:first-child) { text-align: right; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--bg-secondary); }
+    .ticker-name { font-weight: 600; font-size: 12px; }
+    .ticker-full { font-size: 10px; color: var(--text-tertiary); margin-top: 1px; }
+    .pill {
+      display: inline-block; font-size: 10px; padding: 2px 7px;
+      border-radius: 10px; background: var(--bg-tertiary); color: var(--text-secondary);
+    }
+    .pos-cell { color: var(--pos); font-weight: 500; }
+    .neg-cell { color: var(--neg); font-weight: 500; }
+
+    /* ── allocation chart ── */
+    .chart-panel { padding: 20px; }
+    .chart-title { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 18px; }
+    .sector-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .sector-name { font-size: 12px; color: var(--text-secondary); width: 120px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-bg { flex: 1; height: 6px; border-radius: 3px; background: var(--bg-tertiary); overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+    .sector-pct { font-size: 12px; font-weight: 600; color: var(--text-primary); width: 38px; text-align: right; flex-shrink: 0; }
+    .sector-val { font-size: 11px; color: var(--text-tertiary); width: 54px; text-align: right; flex-shrink: 0; }
+
+    /* ── right / chat panel ── */
+    .right { background: var(--bg-secondary); display: flex; flex-direction: column; }
+    .chat-header {
+      padding: 13px 16px; border-bottom: 0.5px solid var(--border);
+      font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--text-tertiary);
+    }
+
+    .suggestions { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px 4px; }
+    .sug {
+      font-size: 11px; padding: 7px 11px;
+      border: 0.5px solid var(--border-mid); border-radius: var(--radius);
+      cursor: pointer; color: var(--text-secondary); background: var(--bg-primary);
+      text-align: left; transition: all 0.12s;
+    }
+    .sug:hover { background: var(--bg-tertiary); color: var(--text-primary); border-color: var(--border-mid); }
+
+    .chat-messages { flex: 1; overflow-y: auto; padding: 12px 14px 6px; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+
+    .msg { max-width: 94%; }
+    .msg-user { align-self: flex-end; }
+    .msg-user .bubble {
+      background: var(--accent); color: var(--bg-primary);
+      border-radius: 14px 14px 3px 14px;
+      font-size: 12px; padding: 8px 13px; line-height: 1.55;
+    }
+    .msg-bot { align-self: flex-start; }
+    .msg-bot .bubble {
+      background: var(--bg-primary); border: 0.5px solid var(--border);
+      color: var(--text-primary); border-radius: 3px 14px 14px 14px;
+      font-size: 12px; padding: 8px 13px; line-height: 1.55;
+    }
+    .source-tag { font-size: 10px; color: var(--text-tertiary); margin-top: 5px; padding-left: 2px; }
+
+    .typing { display: flex; gap: 4px; padding: 10px 13px; align-items: center; }
+    .typing span { width: 5px; height: 5px; border-radius: 50%; background: var(--text-tertiary); animation: bounce 1.1s infinite ease-in-out; }
+    .typing span:nth-child(2) { animation-delay: 0.18s; }
+    .typing span:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+
+    .chat-input-row {
+      padding: 12px 14px; border-top: 0.5px solid var(--border);
+      display: flex; gap: 8px; align-items: center;
+    }
+    .chat-input-row input {
+      flex: 1; font-size: 12px; padding: 9px 12px;
+      border-radius: var(--radius); border: 0.5px solid var(--border-mid);
+      background: var(--bg-primary); color: var(--text-primary); outline: none;
+      transition: border-color 0.15s;
+    }
+    .chat-input-row input:focus { border-color: var(--text-secondary); }
+    .send-btn {
+      width: 32px; height: 32px; border-radius: 50%; border: none;
+      background: var(--accent); color: var(--bg-primary); cursor: pointer;
+      font-size: 15px; display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.15s;
+    }
+    .send-btn:hover { opacity: 0.75; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- top bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="dot"></div>
+      <div>
+        <div class="topbar-title">Ask Your Portfolio</div>
+        <div class="topbar-sub">HNI client · 15 holdings</div>
+      </div>
+    </div>
+    <div class="topbar-badge">ollama · llama3</div>
+  </div>
+
+  <div class="body">
+    <!-- ── LEFT ── -->
+    <div class="left">
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">Current Value</div>
+          <div class="metric-value" id="m-current">—</div>
+          <div class="metric-sub">total portfolio</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Total P&amp;L</div>
+          <div class="metric-value" id="m-pnl">—</div>
+          <div class="metric-sub pos" id="m-pnlpct">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Top Gainer</div>
+          <div class="metric-value" id="m-top" style="font-size:16px;">—</div>
+          <div class="metric-sub pos" id="m-topval">—</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('holdings',this)">Holdings</button>
+        <button class="tab" onclick="switchTab('allocation',this)">Allocation</button>
+      </div>
+
+      <div class="panel" id="panel-holdings">
+        <table>
+          <thead>
+            <tr>
+              <th>Stock</th>
+              <th>Sector</th>
+              <th>Qty</th>
+              <th>Avg cost</th>
+              <th>LTP</th>
+              <th>P&amp;L</th>
+            </tr>
+          </thead>
+          <tbody id="holdings-body"></tbody>
+        </table>
+      </div>
+
+      <div class="panel chart-panel" id="panel-allocation" style="display:none;">
+        <div class="chart-title">Sector Allocation</div>
+        <div id="sector-bars"></div>
+      </div>
+    </div>
+
+    <!-- ── RIGHT ── -->
+    <div class="right">
+      <div class="chat-header">Ask Your Portfolio</div>
+      <div class="suggestions" id="suggestions">
+        <button class="sug" onclick="sendQ(this.textContent)">What is my total P&amp;L?</button>
+        <button class="sug" onclick="sendQ(this.textContent)">Show sector allocation</button>
+        <button class="sug" onclick="sendQ(this.textContent)">Which stock is dragging returns?</button>
+        <button class="sug" onclick="sendQ(this.textContent)">What is EBITDA?</button>
+      </div>
+      <div class="chat-messages" id="chat"></div>
+      <div class="chat-input-row">
+        <input id="qinput" type="text" placeholder="Ask about your portfolio…" onkeydown="if(event.key==='Enter')sendMsg()" />
+        <button class="send-btn" onclick="sendMsg()">↑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── portfolio data ── */
+const holdings = [
+  {ticker:"INFY",   name:"Infosys",          sector:"Technology",      qty:200, avg:1400, ltp:1580},
+  {ticker:"RELIANCE",name:"Reliance Ind.",   sector:"Energy",          qty:150, avg:2500, ltp:2730},
+  {ticker:"HDFCBANK",name:"HDFC Bank",       sector:"Financials",      qty:100, avg:1600, ltp:1540},
+  {ticker:"TCS",    name:"TCS",              sector:"Technology",      qty:80,  avg:3500, ltp:3820},
+  {ticker:"SUNPHARMA",name:"Sun Pharma",     sector:"Healthcare",      qty:120, avg:950,  ltp:1020},
+  {ticker:"WIPRO",  name:"Wipro",            sector:"Technology",      qty:300, avg:400,  ltp:450},
+  {ticker:"ICICIBANK",name:"ICICI Bank",     sector:"Financials",      qty:200, avg:900,  ltp:1050},
+  {ticker:"LT",     name:"Larsen & Toubro", sector:"Industrials",     qty:60,  avg:2800, ltp:3100},
+  {ticker:"HINDUNILVR",name:"HUL",           sector:"Cons. Staples",   qty:80,  avg:2400, ltp:2300},
+  {ticker:"BAJFINANCE",name:"Bajaj Finance", sector:"Financials",      qty:40,  avg:6500, ltp:7200},
+  {ticker:"ASIANPAINT",name:"Asian Paints",  sector:"Materials",       qty:70,  avg:3000, ltp:2850},
+  {ticker:"MARUTI", name:"Maruti Suzuki",    sector:"Cons. Disc.",     qty:30,  avg:9000, ltp:10500},
+  {ticker:"NTPC",   name:"NTPC",             sector:"Utilities",       qty:500, avg:180,  ltp:210},
+  {ticker:"DRREDDY",name:"Dr. Reddy's",      sector:"Healthcare",      qty:50,  avg:4800, ltp:5200},
+  {ticker:"TITAN",  name:"Titan Company",    sector:"Cons. Disc.",     qty:90,  avg:2800, ltp:3300},
+];
+
+const sectorColors = {
+  "Technology":"#2563EB","Financials":"#7C3AED","Energy":"#D97706",
+  "Healthcare":"#059669","Industrials":"#6B7280","Cons. Staples":"#BE185D",
+  "Materials":"#0891B2","Cons. Disc.":"#DC2626","Utilities":"#65A30D","Materials":"#0891B2"
+};
+
+const fmt = n => '₹' + Math.abs(n).toLocaleString('en-IN');
+const fmtL = n => '₹' + (Math.abs(n)/100000).toFixed(1) + 'L';
+const pctOf = (avg,ltp) => (((ltp-avg)/avg)*100).toFixed(1);
+
+/* ── compute summary ── */
+let totalInvested = 0, totalCurrent = 0;
+let best = null, worst = null;
+
+holdings.forEach(h => {
+  const inv = h.avg * h.qty, cur = h.ltp * h.qty;
+  totalInvested += inv; totalCurrent += cur;
+  const p = parseFloat(pctOf(h.avg, h.ltp));
+  if (!best  || p > best.p)  best  = {ticker: h.ticker, p};
+  if (!worst || p < worst.p) worst = {ticker: h.ticker, p};
+});
+const totalPnl = totalCurrent - totalInvested;
+const totalPct = ((totalPnl/totalInvested)*100).toFixed(1);
+
+document.getElementById('m-current').textContent = fmtL(totalCurrent);
+const pnlEl = document.getElementById('m-pnl');
+pnlEl.textContent = (totalPnl >= 0 ? '+' : '') + fmtL(totalPnl);
+pnlEl.className = 'metric-value ' + (totalPnl >= 0 ? 'pos' : 'neg');
+document.getElementById('m-pnlpct').textContent = (totalPnl >= 0 ? '↑ ' : '↓ ') + Math.abs(totalPct) + '% overall';
+document.getElementById('m-top').textContent = best.ticker;
+document.getElementById('m-topval').textContent = '+' + best.p + '%';
+
+/* ── render holdings table ── */
+const tbody = document.getElementById('holdings-body');
+holdings.forEach(h => {
+  const pnl = (h.ltp - h.avg) * h.qty;
+  const p = pctOf(h.avg, h.ltp);
+  const pos = pnl >= 0;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><div class="ticker-name">${h.ticker}</div><div class="ticker-full">${h.name}</div></td>
+    <td><span class="pill">${h.sector}</span></td>
+    <td>${h.qty}</td>
+    <td>${fmt(h.avg)}</td>
+    <td>${fmt(h.ltp)}</td>
+    <td class="${pos?'pos-cell':'neg-cell'}">${pos?'+':''}${fmt(pnl)}<br><span style="font-size:10px;font-weight:400;">${pos?'+':''}${p}%</span></td>
+  `;
+  tbody.appendChild(tr);
+});
+
+/* ── render sector bars ── */
+const sectorVals = {};
+let grandTotal = 0;
+holdings.forEach(h => {
+  const v = h.qty * h.ltp;
+  sectorVals[h.sector] = (sectorVals[h.sector] || 0) + v;
+  grandTotal += v;
+});
+const sorted = Object.entries(sectorVals).sort((a,b) => b[1]-a[1]);
+const barsEl = document.getElementById('sector-bars');
+sorted.forEach(([sec, val]) => {
+  const p = ((val/grandTotal)*100).toFixed(1);
+  const color = sectorColors[sec] || '#888';
+  const row = document.createElement('div');
+  row.className = 'sector-row';
+  row.innerHTML = `
+    <div class="sector-name">${sec}</div>
+    <div class="bar-bg"><div class="bar-fill" style="width:${p}%;background:${color};"></div></div>
+    <div class="sector-pct">${p}%</div>
+    <div class="sector-val">${fmtL(val)}</div>
+  `;
+  barsEl.appendChild(row);
+});
+
+/* ── tab switching ── */
+function switchTab(name, el) {
+  document.getElementById('panel-holdings').style.display  = name === 'holdings'   ? 'block' : 'none';
+  document.getElementById('panel-allocation').style.display = name === 'allocation' ? 'block' : 'none';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ── chat ── */
+const chatEl = document.getElementById('chat');
+
+function addMsg(html, isUser, sources) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + (isUser ? 'msg-user' : 'msg-bot');
+  d.innerHTML = `<div class="bubble">${html}</div>`;
+  if (!isUser && sources) {
+    const s = document.createElement('div');
+    s.className = 'source-tag';
+    s.textContent = 'sources: ' + sources;
+    d.appendChild(s);
+  }
+  chatEl.appendChild(d);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return d;
+}
+
+function addTyping() {
+  const d = document.createElement('div');
+  d.className = 'msg msg-bot';
+  d.innerHTML = `<div class="bubble typing"><span></span><span></span><span></span></div>`;
+  chatEl.appendChild(d);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return d;
+}
+
+function getAnswer(q) {
+  const lq = q.toLowerCase();
+
+  if (/p.l|profit|loss|return|gain/.test(lq)) {
+    const rows = holdings.map(h => {
+      const pnl = (h.ltp - h.avg) * h.qty;
+      const p = pctOf(h.avg, h.ltp);
+      const pos = pnl >= 0;
+      return `${h.ticker}: <span class="${pos?'pos-cell':'neg-cell'}">${pos?'+':''}${fmt(pnl)} (${pos?'+':''}${p}%)</span>`;
+    }).join('<br>');
+    const pos = totalPnl >= 0;
+    return {
+      text: `<b>Total invested:</b> ${fmtL(totalInvested)}<br><b>Current value:</b> ${fmtL(totalCurrent)}<br><b>Overall P&L: <span class="${pos?'pos-cell':'neg-cell'}">${pos?'+':''}${fmtL(totalPnl)} (${pos?'+':''}${totalPct}%)</span></b><br><br>${rows}`,
+      sources: 'portfolio.json'
+    };
+  }
+
+  if (/sector|alloc|weight|breakdown|diversif/.test(lq)) {
+    const rows = sorted.map(([s,v]) => {
+      const p = ((v/grandTotal)*100).toFixed(1);
+      const color = sectorColors[s] || '#888';
+      return `<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${color};margin-right:5px;vertical-align:middle;"></span>${s}: <b>${p}%</b> (${fmtL(v)})`;
+    }).join('<br>');
+    return { text: rows, sources: 'portfolio.json' };
+  }
+
+  if (/drag|worst|underperform|loser|weak/.test(lq)) {
+    const h = holdings.find(h => h.ticker === worst.ticker);
+    return { text: `<b>${h.name} (${h.ticker})</b> is your weakest holding at <span class="neg-cell">${worst.p}%</span> return.<br>Invested: ${fmt(h.avg*h.qty)} → Current: ${fmt(h.ltp*h.qty)}`, sources: 'portfolio.json' };
+  }
+
+  if (/top|best|gainer/.test(lq)) {
+    const h = holdings.find(h => h.ticker === best.ticker);
+    return { text: `<b>${h.name} (${h.ticker})</b> is your top gainer at <span class="pos-cell">+${best.p}%</span>.<br>P&L: <span class="pos-cell">+${fmt((h.ltp-h.avg)*h.qty)}</span>`, sources: 'portfolio.json' };
+  }
+
+  if (/ebitda/.test(lq)) {
+    return { text: 'EBITDA stands for <b>Earnings Before Interest, Taxes, Depreciation, and Amortization</b>. It measures a company\'s core operating profitability, stripping out financing and accounting decisions.', sources: 'glossary.md' };
+  }
+
+  if (/nav/.test(lq)) {
+    return { text: '<b>NAV (Net Asset Value)</b> is the per-unit value of a mutual fund or ETF — total assets minus liabilities, divided by total units outstanding.', sources: 'glossary.md' };
+  }
+
+  if (/infosys|infy/.test(lq)) {
+    return { text: 'Infosys (INFY) reported strong Q4 FY2024 results with revenue growing ~6.4% YoY. Deal wins totalled $4.5B in Q4. The stock has outperformed the Nifty IT index YTD. Your holding is currently <span class="pos-cell">+12.9%</span>.', sources: 'infosys_q4_results.md, portfolio.json' };
+  }
+
+  if (/reliance/.test(lq)) {
+    return { text: 'Reliance Industries has a ₹75,000 Cr capex plan for its New Energy business. Retail GMV reached ₹3.8L Cr in FY2024. Your holding is currently <span class="pos-cell">+9.2%</span>.', sources: 'reliance_green_energy.md, portfolio.json' };
+  }
+
+  if (/pharma|healthcare/.test(lq)) {
+    return { text: 'The pharma sector outlook for FY2025 is positive — US generic approvals picking up, domestic growth of 8–10%. You hold Sun Pharma (+7.4%) and Dr. Reddy\'s (+8.3%). Analysts rate the sector <b>Overweight</b>.', sources: 'pharma_sector_outlook.md, portfolio.json' };
+  }
+
+  return {
+    text: 'I can answer questions about your <b>P&L</b>, <b>sector allocation</b>, individual stocks, or financial terms. Try one of the suggestions above, or ask something like "How is my pharma exposure?" or "What is NAV?"',
+    sources: null
+  };
+}
+
+function sendQ(q) {
+  document.getElementById('suggestions').style.display = 'none';
+  addMsg(q.replace(/&amp;/g,'&'), true);
+  const typing = addTyping();
+  setTimeout(() => {
+    typing.remove();
+    const { text, sources } = getAnswer(q);
+    addMsg(text, false, sources);
+  }, 600 + Math.random() * 350);
+}
+
+function sendMsg() {
+  const inp = document.getElementById('qinput');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  sendQ(q);
+}
+</script>
+</body>
+</html>
