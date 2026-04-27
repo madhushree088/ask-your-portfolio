@@ -50,8 +50,8 @@ def main():
         except Exception as e:
             ok, reason = False, str(e)
 
-        status = "PASS ✓" if ok else f"FAIL ✗  ({reason})"
-        print(f"[{cid}] {query!r:50s} → {status}")
+        status = "PASS [OK]" if ok else f"FAIL [X] ({reason})"
+        print(f"[{cid}] {query!r:50s} -> {status}")
         if ok:
             passed += 1
 
