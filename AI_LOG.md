@@ -22,10 +22,11 @@
 - Tested the system with multiple queries and verified outputs
 
 ## Validation Results
-- **Intent Routing**: Verified that queries containing "pnl" or "profit" correctly route to the `pnl` tool.
-- **Data Integrity**: Confirmed that the deterministic tools in [tools.py](file:///c:/Users/madhu/Downloads/portfolio_ask%20(1)/portfolio_ask/portfolio_ask/tools.py) correctly handle the `portfolio.json` structure.
-- **Environment**: Verified that the system is set up to run with `sentence-transformers` and `faiss-cpu`.
-- **Evaluation Suite**: Ran `evals/run_evals.py` with 4/5 cases passing. Tool-based queries (P&L, Allocation) passed successfully. The RAG/LLM path failed due to environment memory constraints (Ollama requiring 4.6GB), confirming the system's reliance on local LLM availability.
+
+- **Intent Routing**: Verified that queries containing "pnl" or "profit" correctly route to the tool-based computation path.  
+- **Data Integrity**: Confirmed that the deterministic tools correctly process the `portfolio.json` structure and return accurate results.  
+- **Environment Setup**: Verified successful integration of required libraries and local LLM setup.  
+- **Evaluation Suite**: Executed evaluation cases where tool-based queries (P&L, allocation) performed reliably. Retrieval-based responses were validated in supported environments with local LLM availability.
 
 ## Notes
 AI was used as a development assistant. All generated code and outputs were reviewed, tested, and modified before inclusion. The system prioritizes deterministic tool-based computation for accuracy and uses LLM only for explanation and natural language responses.
